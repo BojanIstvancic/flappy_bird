@@ -28,6 +28,7 @@ const initialBirdPosition = { x: config.width / 10, y: config.height / 2 }; // i
 let pipes = null;
 const PIPES_TO_RENDER = 4;
 const pipeOpeningDistanceRange = [150, 250];
+const pipeHorizontalDistanceRange = [300, 500];
 let pipeHorizontalDistance = 0;
 
 function preload() {
@@ -138,15 +139,19 @@ function restartBirdPosition() {
 
 function placePipe(uPipe, lPipe) {
   // define the pipes position
-  pipeHorizontalDistance += 400;
 
-  let pipeOpeningDistance = Phaser.Math.Between(...pipeOpeningDistanceRange); // choses random value between two values
-  let pipeVerticalPosition = Phaser.Math.Between(
+  const rightMostX = getRightMostPipe();
+
+  const pipeOpeningDistance = Phaser.Math.Between(...pipeOpeningDistanceRange); // choses random value between two values
+  const pipeVerticalPosition = Phaser.Math.Between(
     20,
     config.height - 20 - pipeOpeningDistance
   ); // vertical position of the pipes
+  const pipeHorizontalDistance = Phaser.Math.Between(
+    ...pipeHorizontalDistanceRange
+  ); // pull random value between 300 and 500
 
-  uPipe.x = pipeHorizontalDistance;
+  uPipe.x = rightMostX + pipeHorizontalDistance; //calculate horizontal position of the most right pipe and add to it random value so it is moved more to the right
   uPipe.y = pipeVerticalPosition;
 
   lPipe.x = uPipe.x;
@@ -154,6 +159,18 @@ function placePipe(uPipe, lPipe) {
 
   // uPipe.body.velocity.x = -200; // move pipes horizontally from right to left
   // lPipe.body.velocity.x = -200; // we will add velocity to the group and that will apply to all pipes inside the group
+}
+
+function getRightMostPipe() {
+  // calculate CURRENT the most right pipe so we can add the horizontal distance dynamically
+  let rightMostX = 0;
+
+  pipes.getChildren().forEach((pipe) => {
+    // pipes.getChildren() - get all pipes
+    rightMostX = Math.max(pipe.x, rightMostX); // find the pipe which is currently the most right and return it's position
+  });
+
+  return rightMostX;
 }
 
 new Phaser.Game(config);
