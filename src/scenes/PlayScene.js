@@ -33,54 +33,10 @@ class PlayScene extends Phaser.Scene {
 
   create() {
     // initialize the application
-
-    // this.add.image(config.width / 2, config.height / 2, "sky");
-    this.add.image(0, 0, "sky").setOrigin(0);
-    /* 
-      Add the image to the application (we are positioning center of the image to the center of the app)
-      [1] - x position - of the canvas
-      [2] - y position - of the canvas
-      [3] - key of the image
-  
-      setOrigin(0, 0) - change origin of an image - top left (x = 0, y = 0)
-    */
-
-    this.bird = this.physics.add
-      .sprite(this.config.startPosition.x, this.config.startPosition.y, "bird") // get birds position from config - pulled from shared config
-      .setOrigin(0);
-
-    /*
-      sprite - game object - with multiple options
-      physics - we must add physics if we want to apply physics to a bird (gravity, collision...)
-    */
-
-    this.bird.body.gravity.y = 400; // we added gravity only for bird
-
-    /*
-      add gravity - (speed on y axis with acceleration) and velocity (speed - no acceleration ) to each object separately
-      bird.body.gravity.y = 200; // 200px / 1s, 400px / 2s, 600px - speed increases
-      bird.body.velocity.y = 200; // 200px - speed
-    */
-    //  bird.body.velocity.x = FLAP_VELOCITY; // add X velocity - bird is moving left to right
-
-    this.pipes = this.physics.add.group(); // create group - when we create the group we can apply some physics and functionalities to all of them
-
-    for (let i = 0; i < PIPES_TO_RENDER; i++) {
-      // generate series of pipes
-      // const upperPipe = this.physics.add.sprite(0, 0, "pipe").setOrigin(0, 1); // create 2 pipes with default position and pass them to the function
-      // const lowerPipe = this.physics.add.sprite(0, 0, "pipe").setOrigin(0); - old way
-
-      const upperPipe = this.pipes.create(0, 0, "pipe").setOrigin(0, 1);
-      const lowerPipe = this.pipes.create(0, 0, "pipe").setOrigin(0); // it will create dynamic sprite and add it in a group
-
-      this.placePipe(upperPipe, lowerPipe);
-    }
-
-    this.pipes.setVelocityX(-200); // give to all group -200 on X velocity
-
-    this.input.on("pointerdown", this.flap, this);
-    // we need to add third argument THIS so the function knows THIS.flap (THIS) refers to THIS context - context of THIS class not the other one
-    this.input.keyboard.on("keydown_SPACE", this.flap, this);
+    this.createBackground();
+    this.createBird();
+    this.createPipes()
+    this.handleInputs();
   }
 
   update(time, delta) {
@@ -98,19 +54,81 @@ class PlayScene extends Phaser.Scene {
     // example function if we want to move the sprite
     */
 
-    if (this.bird.y < 0) {
-      // prevent bird from leaving the game on the top
-      this.bird.y = 0;
+    this.putBirdBackInViewIfLeavesOnTheTop()
+    this.checkGameStatus();
+    this.recyclePipes();
+    // this funciton must be called here cause we want to check the position of the pipes for every frame
+  }
+
+  createBackground() {
+    // this.add.image(config.width / 2, config.height / 2, "sky");
+    this.add.image(0, 0, "sky").setOrigin(0);
+    /* 
+      Add the image to the application (we are positioning center of the image to the center of the app)
+      [1] - x position - of the canvas
+      [2] - y position - of the canvas
+      [3] - key of the image
+  
+      setOrigin(0, 0) - change origin of an image - top left (x = 0, y = 0)
+    */
+  }
+
+  createBird() {
+    this.bird = this.physics.add
+      .sprite(this.config.startPosition.x, this.config.startPosition.y, "bird") // get birds position from config - pulled from shared config
+      .setOrigin(0);
+
+    /*
+      sprite - game object - with multiple options
+      physics - we must add physics if we want to apply physics to a bird (gravity, collision...)
+    */
+
+    this.bird.body.gravity.y = 400; // we added gravity only for bird
+
+    /*
+      add gravity - (speed on y axis with acceleration) and velocity (speed - no acceleration ) to each object separately
+      bird.body.gravity.y = 200; // 200px / 1s, 400px / 2s, 600px - speed increases
+      bird.body.velocity.y = 200; // 200px - speed
+    */
+    //  bird.body.velocity.x = FLAP_VELOCITY; // add X velocity - bird is moving left to right
+  }
+
+  createPipes() {
+    this.pipes = this.physics.add.group(); // create group - when we create the group we can apply some physics and functionalities to all of them
+
+    for (let i = 0; i < PIPES_TO_RENDER; i++) {
+      // generate series of pipes
+      // const upperPipe = this.physics.add.sprite(0, 0, "pipe").setOrigin(0, 1); // create 2 pipes with default position and pass them to the function
+      // const lowerPipe = this.physics.add.sprite(0, 0, "pipe").setOrigin(0); - old way
+
+      const upperPipe = this.pipes.create(0, 0, "pipe").setOrigin(0, 1);
+      const lowerPipe = this.pipes.create(0, 0, "pipe").setOrigin(0); // it will create dynamic sprite and add it in a group
+
+      this.placePipe(upperPipe, lowerPipe);
     }
 
+    this.pipes.setVelocityX(-200); // give to all group -200 on X velocity
+  }
+
+  handleInputs() {
+    this.input.on("pointerdown", this.flap, this);
+    // we need to add third argument THIS so the function knows THIS.flap (THIS) refers to THIS context - context of THIS class not the other one
+    this.input.keyboard.on("keydown_SPACE", this.flap, this);
+  }
+
+  checkGameStatus() {
     if (this.bird.y > this.config.height) {
       // game lost if bird drops
       alert("lost");
       this.restartBirdPosition();
     }
+  }
 
-    this.recyclePipes();
-    // this funciton must be called here cause we want to check the position of the pipes for every frame
+  putBirdBackInViewIfLeavesOnTheTop() {
+    if (this.bird.y < 0) {
+      // prevent bird from leaving the game on the top
+      this.bird.y = 0;
+    }
   }
 
   placePipe(uPipe, lPipe) {
