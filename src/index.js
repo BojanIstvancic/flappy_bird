@@ -29,7 +29,6 @@ let pipes = null;
 const PIPES_TO_RENDER = 4;
 const pipeOpeningDistanceRange = [150, 250];
 const pipeHorizontalDistanceRange = [300, 500];
-let pipeHorizontalDistance = 0;
 
 function preload() {
   // loading assets, images, music, animations...
@@ -68,7 +67,7 @@ function create() {
     physics - we must add physics if we want to apply physics to a bird (gravity, collision...)
   */
 
-  bird.body.gravity.y = 200; // we added gravity only for bird
+  bird.body.gravity.y = 400; // we added gravity only for bird
 
   /*
     add gravity - (speed on y axis with acceleration) and velocity (speed - no acceleration ) to each object separately
@@ -121,6 +120,9 @@ function update(time, delta) {
     alert("lost");
     restartBirdPosition();
   }
+
+  recyclePipes();
+  // this funciton must be called here cause we want to check the position of the pipes for every frame
 }
 
 // creating custom function for gameplay
@@ -159,6 +161,22 @@ function placePipe(uPipe, lPipe) {
 
   // uPipe.body.velocity.x = -200; // move pipes horizontally from right to left
   // lPipe.body.velocity.x = -200; // we will add velocity to the group and that will apply to all pipes inside the group
+}
+
+function recyclePipes() {
+  // when the pipe pair goes out of the screen (left) place/reuse it as a last pipe pair
+
+  const tempPipes = []; // create array which will hold 2 pipes when found
+  pipes.getChildren().forEach((pipe) => {
+    if (pipe.getBounds().right <= 0) {
+      // if right side of the pipe is <= 0 on x axis - meaning if it just left the screen, then recycle it
+      tempPipes.push(pipe);
+
+      if (tempPipes.length === 2) {
+        placePipe(...tempPipes); // when we find both pipes we destructure the array and put these two values in our placePipe function
+      }
+    }
+  });
 }
 
 function getRightMostPipe() {
