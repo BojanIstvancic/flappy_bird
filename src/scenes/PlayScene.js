@@ -14,7 +14,10 @@ class PlayScene extends Phaser.Scene {
 
     this.pipeOpeningDistanceRange = [150, 250];
     this.pipeHorizontalDistanceRange = [300, 500];
-    this.flapVelocity = 250;
+    this.flapVelocity = 300;
+
+    this.score = 0;
+    this.scoreText = '';
   }
 
   preload() {
@@ -37,6 +40,7 @@ class PlayScene extends Phaser.Scene {
     this.createBird();
     this.createPipes()
     this.createColliders();
+    this.createScore();
     this.handleInputs();
   }
 
@@ -83,7 +87,7 @@ class PlayScene extends Phaser.Scene {
       physics - we must add physics if we want to apply physics to a bird (gravity, collision...)
     */
 
-    this.bird.body.gravity.y = 400; // we added gravity only for bird
+    this.bird.body.gravity.y = 600; // we added gravity only for bird
 
     /*
       add gravity - (speed on y axis with acceleration) and velocity (speed - no acceleration ) to each object separately
@@ -165,6 +169,7 @@ class PlayScene extends Phaser.Scene {
 
         if (tempPipes.length === 2) {
           this.placePipe(...tempPipes); // when we find both pipes we destructure the array and put these two values in our placePipe function
+          this.increaseScore() // when we recycle pipes means we passed that pipes so we increase the score
         }
       }
     });
@@ -213,6 +218,23 @@ class PlayScene extends Phaser.Scene {
     // 3 argument - callBack function
     // 4 argument - callBack for a callBack
     // 5 argument - callback context
+  }
+
+  createScore() {
+    this.score = 0;
+    this.scoreText = this.add.text(16, 16, `Score: ${0}`, { fontSize: '32px', fill: '#000' })
+    /*
+      add text
+      x - position
+      y - position
+      text we are displaying
+      {} - fontstyling
+    */
+  }
+
+  increaseScore() {
+    this.score++;
+    this.scoreText.setText(`Score: ${this.score}`) // update text
   }
 }
 
