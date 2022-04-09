@@ -36,6 +36,7 @@ class PlayScene extends Phaser.Scene {
     this.createBackground();
     this.createBird();
     this.createPipes()
+    this.createColliders();
     this.handleInputs();
   }
 
@@ -54,7 +55,6 @@ class PlayScene extends Phaser.Scene {
     // example function if we want to move the sprite
     */
 
-    this.putBirdBackInViewIfLeavesOnTheTop()
     this.checkGameStatus();
     this.recyclePipes();
     // this funciton must be called here cause we want to check the position of the pipes for every frame
@@ -91,6 +91,7 @@ class PlayScene extends Phaser.Scene {
       bird.body.velocity.y = 200; // 200px - speed
     */
     //  bird.body.velocity.x = FLAP_VELOCITY; // add X velocity - bird is moving left to right
+    this.bird.setCollideWorldBounds(true) // we can colide with the edges of the screen
   }
 
   createPipes() {
@@ -101,8 +102,12 @@ class PlayScene extends Phaser.Scene {
       // const upperPipe = this.physics.add.sprite(0, 0, "pipe").setOrigin(0, 1); // create 2 pipes with default position and pass them to the function
       // const lowerPipe = this.physics.add.sprite(0, 0, "pipe").setOrigin(0); - old way
 
-      const upperPipe = this.pipes.create(0, 0, "pipe").setOrigin(0, 1);
-      const lowerPipe = this.pipes.create(0, 0, "pipe").setOrigin(0); // it will create dynamic sprite and add it in a group
+      const upperPipe = this.pipes.create(0, 0, "pipe")
+        .setImmovable(true) // make the object immovable
+        .setOrigin(0, 1);
+      const lowerPipe = this.pipes.create(0, 0, "pipe")
+        .setImmovable(true)
+        .setOrigin(0); // it will create dynamic sprite and add it in a group
 
       this.placePipe(upperPipe, lowerPipe);
     }
@@ -117,17 +122,12 @@ class PlayScene extends Phaser.Scene {
   }
 
   checkGameStatus() {
-    if (this.bird.y > this.config.height) {
+    if (this.bird.getBounds().bottom >= this.config.height || this.bird.y <= 0) {
+      // .getBounds().bottom > bottom collider - if bird leaves the screen - bottom
+      // this.bird.y <= 0 if birds leaves the sceen - above
       // game lost if bird drops
       alert("lost");
-      this.restartBirdPosition();
-    }
-  }
-
-  putBirdBackInViewIfLeavesOnTheTop() {
-    if (this.bird.y < 0) {
-      // prevent bird from leaving the game on the top
-      this.bird.y = 0;
+      this.gameOver();
     }
   }
 
@@ -189,10 +189,20 @@ class PlayScene extends Phaser.Scene {
   }
 
   // restart the game and restart the bird position
-  restartBirdPosition() {
-    this.bird.x = this.config.startPosition.x;
-    this.bird.y = this.config.startPosition.y;
-    this.bird.body.velocity.y = 0;
+  gameOver() {
+    // this.bird.x = this.config.startPosition.x;
+    // this.bird.y = this.config.startPosition.y;
+    // this.bird.body.velocity.y = 0;
+    this.physics.pause(); // stop the game
+    this.bird.setTint(0xEE4824) // change the color of the sprite (0x = # - rest is a RGB code)
+  }
+
+  createColliders() { // coliders
+    this.physics.add.collider(this.bird, this.pipes, this.gameOver, null, this)
+    // 1, 2 arguments - 2 things that should collide
+    // 3 argument - callBack function
+    // 4 argument - callBack for a callBack
+    // 5 argument - callback context
   }
 }
 
