@@ -118,7 +118,7 @@ class PlayScene extends Phaser.Scene {
   handleInputs() {
     this.input.on("pointerdown", this.flap, this);
     // we need to add third argument THIS so the function knows THIS.flap (THIS) refers to THIS context - context of THIS class not the other one
-    this.input.keyboard.on("keydown_SPACE", this.flap, this);
+    this.input.keyboard.on("keydown_M", this.flap, this);
   }
 
   checkGameStatus() {
@@ -126,7 +126,6 @@ class PlayScene extends Phaser.Scene {
       // .getBounds().bottom > bottom collider - if bird leaves the screen - bottom
       // this.bird.y <= 0 if birds leaves the sceen - above
       // game lost if bird drops
-      alert("lost");
       this.gameOver();
     }
   }
@@ -190,11 +189,22 @@ class PlayScene extends Phaser.Scene {
 
   // restart the game and restart the bird position
   gameOver() {
-    // this.bird.x = this.config.startPosition.x;
-    // this.bird.y = this.config.startPosition.y;
-    // this.bird.body.velocity.y = 0;
     this.physics.pause(); // stop the game
     this.bird.setTint(0xEE4824) // change the color of the sprite (0x = # - rest is a RGB code)
+
+    this.time.addEvent({
+      delay: 1000,
+      callback: () => {
+        this.scene.restart(); // restart this - playScene - a game
+      },
+      loop: false
+    })
+    /*
+  this.time.addEvent - we can create a delay
+    1 - delay: - amount of delay in miliseconds - 1000ms = 1s
+    2 - callback() - function that suppose to be executed after 1s
+    3 - loop - false = it will be executed only once not infinity amount of times
+    */
   }
 
   createColliders() { // coliders
